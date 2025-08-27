@@ -1,0 +1,24 @@
+[Unit]
+Description=TF2 MGE 1
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+# The SHell script forks off into our desired process.
+Type=forking
+
+# Ensure to set the correct user and working directory (installation directory of your server) here.
+User=steam
+WorkingDirectory=/home/steam
+
+ExecStart=/usr/bin/sh run_mge_1.sh
+
+# Restart the server when it is stopped or crashed after 10 seconds.
+# Comment out RestartSec if you want to restart immediately.
+Restart=always
+RestartSec=10
+
+StandardInput=null
+
+[Install]
+WantedBy=multi-user.target

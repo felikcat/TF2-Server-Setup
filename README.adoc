@@ -1,0 +1,126 @@
+:experimental:
+:imagesdir: images
+ifdef::env-github[]
+:icons:
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Initial setup
+https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net offers the best DDoS protection available, and the hardware choices are good.
+
+Go to https://cloud.physgun.com/sshkeys and add an SSH key, use a Random Name and click Generate Key Pair with -> Key Type: ED25519, Key Size: 2048 bit, Private Key Format: OpenSSH.
+
+Setup the Physgun VPS server using the latest Debian Linux, with 2GB of swap space, and ensure VNC is disabled.
+
+Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label.
+
+Login with only the SSH key for the 'root' user, and if it works, then proceed.
+
+WARNING: If the Debian version is still 12 instead of 13, run the following and ensure you keep the locally installed version of the files that Debian wishes to replace: +
+`sed -i 's/bookworm/trixie/g' /etc/apt/sources.list && apt update -y && apt upgrade -y --without-new-pkgs && apt full-upgrade -y && reboot`
+
+Run only if you updated Debian manually: +
+`apt autoremove`
+
+`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo lib32z1 libcurl3-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3-gnutls:i386 libsdl2-2.0-0:i386`
+
+Create the steam user: +
+`useradd -m steam`
+
+Then set its password: +
+`passwd steam`
+
+Install SteamCMD; keep in mind you have to press Enter once and accept Steam's Terms and Conditions: +
+`echo "deb http://ftp.us.debian.org/debian trixie main non-free" > /etc/apt/sources.list.d/non-free.list && apt update -y && apt install -y steamcmd`
+
+Enter the 'steam' user: +
+`sudo -u steam -s`
+
+== Only run these while inside the 'steam' user
+`mkdir -p ~/.steam/sdk32 ~/.steam/sdk64; ln -s /home/steam/tf2_server/linux32/steamclient.so ~/.steam/sdk32/steamclient.so; ln -s /home/steam/tf2_server/linux64/steamclient.so ~/.steam/sdk64/steamclient.so`
+
+`cd ~/ && /usr/games/steamcmd +force_install_dir /home/steam/tf2_server +login anonymous +app_update 232250 +quit`
+
+`cd "/home/steam/tf2_server/tf"`
+
+Keep in mind that this will be outdated, just make sure Metamod:Source and SourceMod are the same major version (such as 1.12): +
+`wget https://mms.alliedmods.net/mmsdrop/1.12/mmsource-1.12.0-git1219-linux.tar.gz && wget https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7210-linux.tar.gz`
+
+Extract those archives to their correct locations: +
+`tar -xvf mmsource-1.12.0-git1219-linux.tar.gz && tar -xvf sourcemod-1.12.0-git7210-linux.tar.gz`
+
+Download and install this plugin that stops console & log spam when somebody uses an anti-aim pitch that goes out of bounds (such as -271): +
+`wget https://github.com/accelerator74/Cleaner/releases/download/build/Cleaner-smlatest-linux-14a8f04.tar.gz && tar -xvf Cleaner-smlatest-linux-14a8f04.tar.gz`
+
+If you're hosting an MGE server: +
+`wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip`
+
+Install SourceBans++: +
+`wget https://github.com/sbpp/sourcebans-pp/releases/download/Plugins-Latest/sourcebans-pp-Plugins-Latest.tar.gz && tar -xvf sourcebans-pp-Plugins-Latest.tar.gz --strip-components=1`
+
+Install a plugin that automatically restarts the server if there are no players and an hour has past; this prevents "lag" and "seed prediction": +
+`cd "/home/steam/tf2_server/tf/addons/sourcemod/plugins"` +
+`wget https://github.com/CoolJosh3k/TF2_Server_UpTime_Restarter/raw/refs/heads/main/server_uptime_restarter.smx`
+
+Install a plugin that limits the players to 2 per IP to prevent excessive amounts of bots: +
+`wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/ip_player_limit.smx`
+
+== Setting up SourceBans++
+- For reference, I use https://physgun.com/webhosting[Physgun's web hosting] with the starter plan since it includes cPanel alongside great DDoS protection, making this easy to do. You need to purchase a domain however, I use Namecheap but there's likely better options.
+
+- Read the example sent to you by Physgun after purchasing, and make sure your domain points to the DNS nameservers provided by that email.
+
+- Log in to cPanel, go to Remote Database Access, then allow the IP to your server(s).
+
+- Go to cPanel -> Database Wizard, create the database + user for sourcebans with a 30 character long password (with no symbols), and be sure to give ALL PRIVILEGES.
+
+- Go to cPanel -> MultiPHP Manager to set the PHP version to the latest version available.
+
+- Download the latest https://github.com/sbpp/sourcebans-pp/releases[SourceBans++ web panel only].
+** Go to cPanel -> File Manager, go to public_html, upload then extract the web panel only zip, then rename the extracted folder to **sourcebans** and delete the zip permanently.
+
+- Follow the official https://sbpp.github.io/docs/quickstart/#write-permission-make-sure-the-files-is-under-the-web-server-user[installation instructions].
+** MySQL is codeword for your database, keep that in mind.
+
+** Use "localhost" for the Server Hostname.
+
+** Ensure the "host" for `/tf/addons/sourcemod/configs/databases.cfg` is set to the IP address (not web domain) of your web server, as the database won't be hosted on the game server(s).
+
+** You can use cPanel -> Directory Privacy to make SourceBans require a login to access at all, which I personally use to hide who's banned for privacy reasons.
+
+- Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
+image:port punch.png[]
+
+== Setting up FastDL
+.This continues on past SourceBans++, I assume you'll use both.
+* Go to cPanel -> File Manager, go to public_html, then create the folder 'maps'.
+* Upload all of the MGE maps into that 'maps' folder.
+* Continue on to the TF2 MGE servers example.
+
+== Example: TF2 MGE servers
+Download this GitHub repository as a zip, which contains the `files` folder with all the necessary files for this server.
+
+.As the 'steam' user:
+- Put `server_mge_1.cfg` in the `~/tf2_server/tf/cfg` directory, and change `sv_downloadurl` to your domain name that has the maps.
+- Put `run_mge_1.sh` in the `~/` directory, and edit the `-ip` parameter to be of your game server's external IP address.
+- Put `tf2_autoupdate.txt` in the `~/` directory.
+- Replace the `mgemod_spawn.cfg` in `~/tf2_server/tf/addons/sourcemod/configs` for my own `mgemod_spawns.cfg` if all-class is desired.
+- Replace the `mge.smx` in `~/tf2_server/tf/addons/sourcemod/plugins` with my own `mge_no_eureka_effect.smx` plugin; this stops a spawn-killing exploit with The Eureka Effect.
+
+.As the 'root' user:
+- Put tf2-mge-1.service in the `/etc/systemd/system` directory.
+
+- Enable then start the 2fort server: +
+`systemctl enable --now tf2-mge-1`
+
+.As the 'steam' user:
+- Note: After entering the 2fort server's console with `screen`, you can press kbd:[Ctrl + a], release then press kbd:[d] to exit that `screen` without shutting down the server: +
+`screen -r tf2-mge-1`
+
+.On the cloud.physgun.com website
+- Go to 'Firewall Portal'.
+- Create Game Preset, put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range to the ports from 27015 to 27020 (for 5 game servers).
