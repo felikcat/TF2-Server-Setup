@@ -67,7 +67,7 @@ Install a plugin that automatically restarts the server if there are no players 
 `wget https://github.com/CoolJosh3k/TF2_Server_UpTime_Restarter/raw/refs/heads/main/server_uptime_restarter.smx`
 
 Install a plugin that limits the players to 2 per IP to prevent excessive amounts of bots: +
-`wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/ip_player_limit.smx`
+`wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/ip_player_limit.smx`
 
 == Setting up SourceBans++
 - For reference, I use https://physgun.com/webhosting[Physgun's web hosting] with the starter plan since it includes cPanel alongside great DDoS protection, making this easy to do. You need to purchase a domain however, I use Namecheap but there's likely better options.
