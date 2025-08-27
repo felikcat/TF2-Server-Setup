@@ -14,9 +14,9 @@ https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net of
 
 Go to https://cloud.physgun.com/sshkeys and add an SSH key, use a Random Name and click Generate Key Pair with -> Key Type: ED25519, Key Size: 2048 bit, Private Key Format: OpenSSH.
 
-Setup the Physgun VPS server using the latest Debian Linux, with 2GB of swap space, and ensure VNC is disabled.
-
 Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label.
+
+Setup the Physgun VPS server using the latest Debian Linux, with 2GB of swap space, and ensure VNC is disabled.
 
 Login with only the SSH key for the 'root' user, and if it works, then proceed.
 
