@@ -95,6 +95,13 @@ Install a plugin that limits the players to 2 per IP to prevent excessive amount
 - Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
 image:port punch.png[]
 
+== Setting up anti-DDoS properly through the cloud.physgun.com website
+- Go to 'Firewall Portal'.
+- Click "Create Game Preset", put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range from 27015 to 27020 (for 5 game servers).
+- Click "Create Filter", put the IP address of your game server in, then select TCP Service (symmetric), and put the port as 22 (or your custom SSH port).
+- Click the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: TCP, Action: Whitelist, and Destination Port: 22.
+- In the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: All (Port Punch), and Action: Deny; this will block all other ports except 27015 to 27020, and port 22.
+
 == Setting up FastDL
 .This continues on past SourceBans++, I assume you'll use both.
 * Go to cPanel -> File Manager, go to public_html, then create the folder 'maps'.
@@ -120,7 +127,3 @@ Download this GitHub repository as a zip, which contains the `files` folder with
 .As the 'steam' user:
 - Note: After entering the 2fort server's console with `screen`, you can press kbd:[Ctrl + a], release then press kbd:[d] to exit that `screen` without shutting down the server: +
 `screen -r tf2-mge-1`
-
-.On the cloud.physgun.com website
-- Go to 'Firewall Portal'.
-- Create Game Preset, put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range to the ports from 27015 to 27020 (for 5 game servers).
