@@ -8,10 +8,10 @@ Type=simple
 User=steam
 WorkingDirectory=/home/steam
 ExecStart=/usr/bin/sh run_mge_1.sh
-# Restart the server when it is stopped or crashed after 10 seconds.
+# Restart the server when it is stopped or crashed after 5 seconds.
 # Comment out RestartSec if you want to restart immediately.
 Restart=always
-RestartSec=10
+RestartSec=5
 StandardInput=null
 
 [Install]

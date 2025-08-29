@@ -37,6 +37,20 @@ Then set its password: +
 Install SteamCMD; keep in mind you have to press Enter once and accept Steam's Terms and Conditions: +
 `echo "deb http://ftp.us.debian.org/debian trixie main non-free" > /etc/apt/sources.list.d/non-free.list && apt update -y && apt install -y steamcmd`
 
+Get the current hostname: +
+`hostname`
+
+Edit this file using either nano, vi, or vim: +
+`/etc/hosts`
+
+----
+# Add the following line, and change this to your hostname.
+your-current-hostname-here 127.0.1.1
+----
+
+Confirm the `/etc/hosts` change was successful, the pings shouldn't fail: +
+`ping your-current-hostname-here -c4`
+
 Enter the 'steam' user: +
 `sudo -u steam -s`
 
