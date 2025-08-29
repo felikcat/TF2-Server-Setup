@@ -26,7 +26,7 @@ WARNING: If the Debian version is still 12 instead of 13, run the following and 
 Run only if you updated Debian manually: +
 `apt autoremove`
 
-`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo lib32z1 libcurl3-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3-gnutls:i386 libsdl2-2.0-0:i386`
+`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo lib32z1 libcurl3-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3-gnutls:i386`
 
 Create the steam user: +
 `useradd -m steam`
@@ -65,16 +65,16 @@ Keep in mind that this will be outdated, just make sure Metamod:Source and Sourc
 `wget https://mms.alliedmods.net/mmsdrop/1.12/mmsource-1.12.0-git1219-linux.tar.gz && wget https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7210-linux.tar.gz`
 
 Extract those archives to their correct locations: +
-`tar -xvf mmsource-1.12.0-git1219-linux.tar.gz && tar -xvf sourcemod-1.12.0-git7210-linux.tar.gz`
+`tar -xvf mmsource-1.12.0-git1219-linux.tar.gz && tar -xvf sourcemod-1.12.0-git7210-linux.tar.gz && rm mmsource-1.12.0-git1219-linux.tar.gz && rm sourcemod-1.12.0-git7210-linux.tar.gz`
 
 Download and install this plugin that stops console & log spam when somebody uses an anti-aim pitch that goes out of bounds (such as -271): +
-`wget https://github.com/accelerator74/Cleaner/releases/download/build/Cleaner-smlatest-linux-14a8f04.tar.gz && tar -xvf Cleaner-smlatest-linux-14a8f04.tar.gz`
+`wget https://github.com/accelerator74/Cleaner/releases/download/build/Cleaner-smlatest-linux-14a8f04.tar.gz && tar -xvf Cleaner-smlatest-linux-14a8f04.tar.gz && rm Cleaner-smlatest-linux-14a8f04.tar.gz`
 
 If you're hosting an MGE server: +
-`wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip`
+`wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip && rm mge.zip`
 
 Install SourceBans++: +
-`wget https://github.com/sbpp/sourcebans-pp/releases/download/Plugins-Latest/sourcebans-pp-Plugins-Latest.tar.gz && tar -xvf sourcebans-pp-Plugins-Latest.tar.gz --strip-components=1`
+`wget https://github.com/sbpp/sourcebans-pp/releases/download/Plugins-Latest/sourcebans-pp-Plugins-Latest.tar.gz && tar -xvf sourcebans-pp-Plugins-Latest.tar.gz --strip-components=1 && rm sourcebans-pp-Plugins-Latest.tar.gz`
 
 Install a plugin that automatically restarts the server if there are no players and an hour has past; this prevents "lag" and "seed prediction": +
 `cd "/home/steam/tf2_server/tf/addons/sourcemod/plugins"` +
