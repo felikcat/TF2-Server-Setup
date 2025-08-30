@@ -7,7 +7,7 @@ After=network-online.target
 Type=simple
 User=steam
 WorkingDirectory=/home/steam
-ExecStart=/usr/bin/sh run_mge_1.sh
+ExecStart=/usr/bin/python3 run_mge_1.py
 # Restart the server when it is stopped or crashed after 5 seconds.
 # Comment out RestartSec if you want to restart immediately.
 Restart=always
