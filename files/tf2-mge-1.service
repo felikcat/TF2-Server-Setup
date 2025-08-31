@@ -1,18 +1,47 @@
 [Unit]
+# Human-readable service description for clarity in management and logs.
 Description=TF2 MGE 1
+# Weak dependency on network availability for reliable operation.
 Wants=network-online.target
+# Ensures startup after network is operational to avoid binding issues.
 After=network-online.target
 
 [Service]
+# Classifies as simple process; active once ExecStart forks.
 Type=simple
+# Runs under non-privileged user for security.
 User=steam
+# Sets working directory for correct path resolution.
 WorkingDirectory=/home/steam
+# Command to start the service via Python script.
 ExecStart=/usr/bin/python3 run_mge_1.py
-# Restart the server when it is stopped or crashed after 5 seconds.
-# Comment out RestartSec if you want to restart immediately.
-Restart=always
+# Sends SIGTERM for graceful shutdown and cleanup.
+ExecStop=/bin/kill -SIGTERM $MAINPID
+# Restarts on abnormal exits; allows clean stops.
+Restart=on-failure
+# 5-second delay before restart to prevent loops.
 RestartSec=5
-StandardInput=null
+# Loads environment variables for secure configuration.
+EnvironmentFile=/etc/default/tf2-mge-1
+# Directs standard output to both journal and console for comprehensive logging and real-time visibility.
+StandardOutput=journal+console
+# Directs standard error to both journal and console for error tracking and debugging.
+StandardError=journal+console
+# Restricts file system write access for exploit mitigation.
+ProtectSystem=strict
+# Prevents access to home directories for isolation.
+ProtectHome=true
+# Provides private /tmp to avoid interference.
+PrivateTmp=true
+# Denies hardware device access to reduce attack surface.
+PrivateDevices=true
+# Blocks privilege gains for security.
+NoNewPrivileges=true
+# 60-second interval for start attempt tracking.
+StartLimitIntervalSec=60
+# Limits to 3 starts in interval to avoid system resource exhaustion.
+StartLimitBurst=3
 
 [Install]
+# Enables service in multi-user runlevel for auto-start on boot.
 WantedBy=multi-user.target
