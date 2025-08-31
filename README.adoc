@@ -9,8 +9,6 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-WARNING: The server heartbeat checker / watchdog is currently overcomplicated.
-
 == Initial setup
 https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net offers the best DDoS protection available, and the hardware choices are good.
 
