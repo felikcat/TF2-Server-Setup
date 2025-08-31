@@ -4,10 +4,7 @@ import time
 import subprocess
 import socket
 
-# Get your key at: https://steamcommunity.com/dev/managegameservers
-# Note that each server requires a different key.
-# Without this key, the server is not visible in the game browser.
-GLST_KEY = "placeholder"
+GLST_KEY = os.environ.get('GLST_KEY')
 
 EXTERNAL_IP = "placeholder"
 SERVER_PORT = "27015"
