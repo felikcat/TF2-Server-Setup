@@ -29,8 +29,6 @@ StandardOutput=journal+console
 StandardError=journal+console
 # Restricts file system write access for exploit mitigation.
 ProtectSystem=strict
-# Prevents access to home directories for isolation.
-ProtectHome=true
 # Provides private /tmp to avoid interference.
 PrivateTmp=true
 # Denies hardware device access to reduce attack surface.
