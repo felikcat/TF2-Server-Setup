@@ -30,7 +30,10 @@ WARNING: If the Debian version is still 12 instead of 13, run the following and 
 Run only if you updated Debian manually: +
 `apt autoremove`
 
-`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo curl lib32z1 libcurl3t64-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3t64-gnutls:i386`
+`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo curl unattended-upgrades lib32z1 libcurl3t64-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3t64-gnutls:i386`
+
+Ensure security updates are automatically downloaded and installed: +
+`dpkg-reconfigure unattended-upgrades`
 
 Create the steam user: +
 `useradd -m steam`
