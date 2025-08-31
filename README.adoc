@@ -148,7 +148,7 @@ Download this GitHub repository as a zip, which contains the `files` folder with
 
 .As the 'steam' user:
 - Put `server_mge_1.cfg` in the `~/tf2_server/tf/cfg` directory, and change `sv_downloadurl` to your domain name that has the maps.
-- Put `run_mge_1.sh` in the `~/` directory, and edit the `-ip` parameter to be of your game server's external IP address.
+- Put `run_mge_1.py` in the `~/` directory, and run `nano run_mge_1.py` to edit it (required).
 - Put `tf2_autoupdate.txt` in the `~/` directory.
 - Replace the `mgemod_spawn.cfg` in `~/tf2_server/tf/addons/sourcemod/configs` for my own `mgemod_spawns.cfg` if all-class is desired.
 - Replace the `mge.smx` in `~/tf2_server/tf/addons/sourcemod/plugins` with my own `mge_no_eureka_effect.smx` plugin; this stops a spawn-killing exploit with The Eureka Effect.
@@ -156,9 +156,7 @@ Download this GitHub repository as a zip, which contains the `files` folder with
 .As the 'root' user:
 - Put tf2-mge-1.service in the `/etc/systemd/system` directory.
 
-- Enable then start the 2fort server: +
+- Enable then start the MGE server: +
 `systemctl enable --now tf2-mge-1`
 
-.As the 'steam' user:
-- Note: After entering the 2fort server's console with `screen`, you can press kbd:[Ctrl + a], release then press kbd:[d] to exit that `screen` without shutting down the server: +
-`screen -r tf2-mge-1`
+TODO: Put notes about logging here
