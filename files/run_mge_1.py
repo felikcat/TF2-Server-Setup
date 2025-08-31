@@ -32,14 +32,6 @@ cmd = [
 
 proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
-# Wait for SteamCMD to finish if an update is happening
-while True:
-    try:
-        subprocess.check_output(["pgrep", "-f", "steamcmd"])
-        time.sleep(5)
-    except subprocess.CalledProcessError:
-        break
-
 # Wait for SRCDS to start by detecting "Connection to Steam servers successful." in console.log
 while not os.path.exists(CONSOLE_LOG):
     time.sleep(1)
