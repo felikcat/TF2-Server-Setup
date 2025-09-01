@@ -106,32 +106,31 @@ Install a plugin that limits the players to 2 per IP to prevent excessive amount
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/ip_player_limit.smx`
 
 == Setting up SourceBans++
-- For reference, I use https://physgun.com/webhosting[Physgun's web hosting] with the starter plan since it includes cPanel alongside great DDoS protection, making this easy to do. You need to purchase a domain however, I use Namecheap but there's likely better options.
+- I use https://www.nfoservers.com/order-webhosting.php[NFOServer's web hosting] for its unlimited traffic, reasonable max connection limits, and great DDoS protection. Avoid https://physgun.com/webhosting[Physgun's web hosting] as they screw you over regarding the data usage, for example, they only allowed 5GB bandwidth initially as "fair usage" for their Starter plan.
 
-- Read the example sent to you by Physgun after purchasing, and make sure your domain points to the DNS nameservers provided by that email.
+- Log in to the NFOServers control panel, and go to your website.
 
-- Log in to cPanel, go to Remote Database Access, then allow the IP to your server(s).
+- Go to "Databases" and add a new database with the prefix "sb", then check "Allow external connections" and click "Submit changes".
 
-- Go to cPanel -> Database Wizard, create the database + user for sourcebans with a 30 character long password (with no symbols), and be sure to give ALL PRIVILEGES.
+- Go to "File manager" and find the hostname, username, and password to login to the web server using SSH (you can optionally use SFTP later on).
 
-- Go to cPanel -> MultiPHP Manager to set the PHP version to the latest version available.
+- `cd public && wget https://github.com/sbpp/sourcebans-pp/releases/download/1.7.0/sourcebans-pp-1.7.0.webpanel-only.tar.gz`
 
-- Download the latest https://github.com/sbpp/sourcebans-pp/releases[SourceBans++ web panel only].
-** Go to cPanel -> File Manager, go to public_html, upload then extract the web panel only zip, then rename the extracted folder to **sourcebans** and delete the zip permanently.
+- `mv sourcebans-pp-1.7.0.webpanel-only sourcebans && rm sourcebans-pp-1.7.0.webpanel-only.tar.gz && cd sourcebans`
 
-- Follow the official https://sbpp.github.io/docs/quickstart/#write-permission-make-sure-the-files-is-under-the-web-server-user[installation instructions].
+- Follow the official https://sbpp.github.io/docs/quickstart/#web-installation[installation instructions] (don't scroll up, those instructions are meant to be skipped).
+** http://example.site.nfoservers.com/sourcebans/install is the correct URL for installing SourceBans++, be sure to change 'example' to your web server name or custom domain.
+
 ** MySQL is codeword for your database, keep that in mind.
 
 ** Use "localhost" for the Server Hostname.
 
 ** Ensure the "host" for `/tf/addons/sourcemod/configs/databases.cfg` is set to the IP address (not web domain) of your web server, as the database won't be hosted on the game server(s).
 
-** You can use cPanel -> Directory Privacy to make SourceBans require a login to access at all, which I personally use to hide who's banned for privacy reasons.
-
-- Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
-image:port punch.png[]
 
 == Setting up anti-DDoS properly through the cloud.physgun.com website
+- Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
+image:port punch.png[]
 - Go to 'Firewall Portal'.
 - Click "Create Game Preset", put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range from 27015 to 27020 (for 5 game servers).
 - Click "Create Filter", put the IP address of your game server in, then select TCP Service (symmetric), and put the port as 22 (or your custom SSH port).
@@ -140,7 +139,7 @@ image:port punch.png[]
 
 == Setting up FastDL
 .This continues on past SourceBans++, I assume you'll use both.
-* Go to cPanel -> File Manager, go to public_html, then create the folder 'maps'.
+* SFTP into your web server, go to public, then create the folder 'maps'.
 * Upload all of the MGE maps into that 'maps' folder.
 * Continue on to the TF2 MGE servers example.
 
