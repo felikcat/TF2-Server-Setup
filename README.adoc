@@ -116,7 +116,7 @@ Install a plugin that limits the players to 2 per IP to prevent excessive amount
 
 - `cd public && wget https://github.com/sbpp/sourcebans-pp/releases/download/1.7.0/sourcebans-pp-1.7.0.webpanel-only.tar.gz`
 
-- `mv sourcebans-pp-1.7.0.webpanel-only sourcebans && rm sourcebans-pp-1.7.0.webpanel-only.tar.gz && cd sourcebans`
+- `mv sourcebans-pp-1.7.0.webpanel-only sourcebans && rm sourcebans-pp-1.7.0.webpanel-only.tar.gz`
 
 - Follow the official https://sbpp.github.io/docs/quickstart/#web-installation[installation instructions] (don't scroll up, those instructions are meant to be skipped).
 ** http://example.site.nfoservers.com/sourcebans/install is the correct URL for installing SourceBans++, be sure to change 'example' to your web server name or custom domain.
