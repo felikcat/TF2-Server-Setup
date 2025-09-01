@@ -16,7 +16,7 @@ Go to https://cloud.physgun.com/sshkeys and add an SSH key, use a Random Name an
 
 TIP: Adding new SSH keys after server creation/OS installation will never apply until you reinstall the OS again from Physgun's website.
 
-Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label.
+Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label. Also backup that private key with a password manager, such as Bitwarden.
 
 Setup the Physgun VPS server using the latest Debian Linux, with 2GB of swap space, and ensure VNC is disabled.
 
