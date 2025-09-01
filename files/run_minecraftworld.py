@@ -9,29 +9,30 @@ import systemd.daemon
 GLST_KEY = os.environ.get('GLST_KEY')
 
 EXTERNAL_IP = "placeholder"
-SERVER_PORT = "27015"
+SERVER_PORT = "27017"
 SERVER_DIR = "/home/steam/tf2_server"
-SESSION_NAME = "tf2-mge-1"
+SESSION_NAME = "tf2-minecraftworld"
 
 CONSOLE_LOG = os.path.join(SERVER_DIR, "tf/console.log")
 
 # Define the command to launch SRCDS
 cmd = [
-    os.path.join(SERVER_DIR, "srcds_run_64"),
+    os.path.join(SERVER_DIR, "srcds_run"),
     "-console",
     "-usercon",
     "+ip", EXTERNAL_IP,
     "-game", "tf",
-    "-insecure",
-    "+map", "mge_training_v8_beta4b",
-    "+servercfgfile", "server_mge_1.cfg",
+    "+map", "minecraftworld_fix_v16",
+    "+servercfgfile", "server_minecraftworld.cfg",
+    "+mapcyclefile", "mapcycle_minecraftworld.txt",
     "+sv_setsteamaccount", GLST_KEY,
     "-port", SERVER_PORT,
     "-autoupdate",
     "-steamcmd_script", "/home/steam/tf2_autoupdate.txt",
     "-steam_dir", "/home/steam/.steam/steam/steamcmd",
     "-condebug",
-    "-maxplayers", "24",
+    "-maxplayers", "32",
+    "+sm_basepath", "addons/sourcemod_minecraftworld",
 ]
 
 # Start SRCDS in a detached screen session and capture the PID

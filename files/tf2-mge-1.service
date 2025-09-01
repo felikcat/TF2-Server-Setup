@@ -29,6 +29,10 @@ StandardOutput=journal+console
 StandardError=journal+console
 # Restricts file system write access for exploit mitigation.
 ProtectSystem=strict
+# Creates /run/screen writable for the service to allow screen session directory creation under ProtectSystem=strict.
+RuntimeDirectory=screen
+# Sets mode 0777 on /run/screen to meet screen's permission requirement.
+RuntimeDirectoryMode=0777
 # Provides private /tmp to avoid interference.
 PrivateTmp=true
 # Denies hardware device access to reduce attack surface.

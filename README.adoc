@@ -28,7 +28,7 @@ WARNING: If the Debian version is still 12 instead of 13, run the following and 
 Run only if you updated Debian manually: +
 `apt autoremove`
 
-`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo curl unattended-upgrades lib32z1 libcurl3t64-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3t64-gnutls:i386`
+`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo curl unattended-upgrades python3-psutil python3-systemd lib32z1 libcurl3t64-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3t64-gnutls:i386`
 
 Ensure security updates are automatically downloaded and installed: +
 `dpkg-reconfigure unattended-upgrades`
@@ -134,7 +134,6 @@ image:sb_database.png[]
 `rm -r ~/public/sourcebans/{install,updater}`
 
 
-
 == Setting up anti-DDoS properly through the cloud.physgun.com website
 - Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
 image:port punch.png[]
@@ -166,4 +165,8 @@ Download this GitHub repository as a zip, which contains the `files` folder with
 - Enable then start the MGE server: +
 `systemctl enable --now tf2-mge-1`
 
-TODO: Put notes about logging here
+== Managing TF2 servers
+
+.As the 'steam' user:
+- Note: After entering the MGE server's console with `screen`, you can press kbd:[Ctrl + a], release then press kbd:[d] to exit that `screen` without shutting down the server: +
+`screen -r tf2-mge-1`
