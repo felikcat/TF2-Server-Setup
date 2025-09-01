@@ -114,7 +114,7 @@ Install a plugin that limits the players to 2 per IP to prevent excessive amount
 
 - Go to "File manager" and find the hostname, username, and password to login to the web server using SSH (you can optionally use SFTP later on).
 
-- `cd public && wget https://github.com/sbpp/sourcebans-pp/releases/download/1.7.0/sourcebans-pp-1.7.0.webpanel-only.tar.gz`
+- `cd ~/public && wget https://github.com/sbpp/sourcebans-pp/releases/download/1.7.0/sourcebans-pp-1.7.0.webpanel-only.tar.gz`
 
 - `mv sourcebans-pp-1.7.0.webpanel-only sourcebans && rm sourcebans-pp-1.7.0.webpanel-only.tar.gz`
 
@@ -125,7 +125,14 @@ Install a plugin that limits the players to 2 per IP to prevent excessive amount
 
 ** Use "localhost" for the Server Hostname.
 
-** Ensure the "host" for `/tf/addons/sourcemod/configs/databases.cfg` is set to the IP address (not web domain) of your web server, as the database won't be hosted on the game server(s).
+** Ensure the "host" for `/tf/addons/sourcemod/configs/databases.cfg` on your game server(s) is set to the IP address (not web domain) of your web server, as the database won't be hosted on the game server(s).
+
+** image:nfoservers_db.png[] +
+image:sb_database.png[]
+
+** After the SourceBans++ install is complete and it tells you to delete the 'install' directory, run this command: +
+`rm -r ~/public/sourcebans/{install,updater}`
+
 
 
 == Setting up anti-DDoS properly through the cloud.physgun.com website
@@ -137,10 +144,10 @@ image:port punch.png[]
 - Click the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: TCP, Action: Whitelist, and Destination Port: 22.
 - In the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: All (Port Punch), and Action: Deny; this will block all other ports except 27015 to 27020, and port 22.
 
-== Setting up FastDL
+== Setting up FastDL for an MGE server
 .This continues on past SourceBans++, I assume you'll use both.
-* SFTP into your web server, go to public, then create the folder 'maps'.
-* Upload all of the MGE maps into that 'maps' folder.
+* SSH into your web server, then run `cd ~/public && mkdir ~/public/maps'.
+* `wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip 'maps/*' -d . && rm mge.zip`
 * Continue on to the TF2 MGE servers example.
 
 == Example: TF2 MGE servers
