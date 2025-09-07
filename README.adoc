@@ -9,8 +9,6 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-CAUTION: DO NOT USE, CURRENTLY UNFINISHED
-
 == Background info
 
 https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net offers the best DDoS protection available, and the hardware choices are good.
@@ -54,13 +52,16 @@ Set your domain name to point to localhost: +
 . Upgrade to Alpine Linux 3.22: +
 `sed -i -e 's/v3\.19/v3\.22/g' /etc/apk/repositories && apk add --upgrade apk-tools && apk upgrade --available && reboot`
 
-. `apk add sudo docker docker-cli-compose && rc-update add docker default && service docker start`
+. Install and run Docker: +
+`apk add sudo docker docker-cli-compose && rc-update add docker default && service docker start`
 
-. `mkdir -p ~/linuxgsm && cd ~/linuxgsm`
+. Make the linuxgsm directory in /root: + 
+`mkdir -p ~/linuxgsm && cd ~/linuxgsm`
 
-. `adduser linuxgsm`
+. Create the linuxgsm user: +
+`adduser linuxgsm`
 
-. `vi compose.yml` (you could install and use `nano` or `vim`)
+. `vi compose.yml` (you could install and use `nano` or `vim` to edit this file)
 ----
 services:
   # Bind Mount
@@ -92,21 +93,23 @@ Disable IPv6 globally: +
 net.ipv6.conf.all.disable_ipv6=1" > /etc/sysctl.d/99-no-ipv6.conf` +
 `sysctl -p /etc/sysctl.d/99-no-ipv6.conf`
 
+We want to ensure LinuxGSM is fully working before running it as `docker compose up -d` (in the background; a "daemon"): +
 `docker compose up`
 
 
 == 3. Setting up an MGE server
-WARNING: Only run these while inside the 'linuxgsm' user (but outside of the Docker)
+WARNING: Only run these while inside the 'linuxgsm' user (but outside of the Docker container).
 
-//`docker exec -it tf2server bash`
+Enter the 'linuxgsm' user: +
 `sudo -u linuxgsm -s`
 
 Look at `files/server_mge_1.cfg` in this repository for an example configuration for an MGE server: +
-// TODO: change the directory since we are operating outside of Docker
 `vi ~/tf2server/serverfiles/tf/cfg/tf2server.cfg`
 
+Copy the default LinuxGSM configuration for TF2 to our first TF2 server: +
 `cp ~/tf2server/config-lgsm/tf2server/_default.cfg ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
 
+Edit the first TF2 server: +
 `vi ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
 
 [bash]
@@ -118,12 +121,9 @@ defaultmap="mge_training_v8_beta4b"
 maxplayers="24"
 
 # Be sure to set the GLST key so your server shows up on the game browser.
-
-# Change stopmode="3" to stopmode="1" to make manual server shutdown much faster.
-
-# Change executable="srcds_run" to executable="srcds_run_64"
 ----
 
+Go to the TF2 server's file directory: +
 `cd ~/tf2server/serverfiles/tf`
 
 Keep in mind that this will be outdated, just make sure Metamod:Source and SourceMod are the same major version (such as 1.12): +
@@ -181,10 +181,19 @@ image:sb_database.png[]
 
 == Setting up FastDL for an MGE server
 .This continues on past SourceBans++, I assume you'll use both.
-* SSH into your web server, then run `cd ~/public && mkdir ~/public/maps'.
+* SSH into your web server, then run `cd ~/public && mkdir ~/public/maps`.
 * `wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip 'maps/*' -d . && rm mge.zip`
-* Continue on to the TF2 MGE servers example.
 
 == Managing TF2 servers
 
-// TODO replace with LinuxGSM
+Enter the Docker container: +
+`docker exec -it tf2server bash`
+
+Enter the 'linuxgsm' user: +
+`sudo -u linuxgsm -s`
+
+Run to get the list of commands available to manage the first TF2 server: +
+`./tf2server`
+
+An example for running a second TF2 server with the same files (created through the `./linuxgsm.sh tf2server` command): +
+`./tf2server-2`
