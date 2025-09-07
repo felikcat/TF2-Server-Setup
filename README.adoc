@@ -54,6 +54,9 @@ Set your domain name to point to localhost: +
 . Upgrade to Alpine Linux 3.22: +
 `sed -i -e 's/v3\.19/v3\.22/g' /etc/apk/repositories && apk add --upgrade apk-tools && apk upgrade --available && reboot`
 
+Start and enable the swap partition: +
+`rc-service swap start && rc-update add swap`
+
 . Install and run Docker: +
 `apk add sudo docker docker-cli-compose && rc-update add docker default && service docker start`
 
