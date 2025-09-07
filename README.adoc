@@ -9,8 +9,32 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-== Initial setup
+CAUTION: DO NOT USE, CURRENTLY UNFINISHED
+
+== Background info
+
 https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net offers the best DDoS protection available, and the hardware choices are good.
+
+For FastDL and SourceBans++, https://www.nfoservers.com/order-webhosting.php[NFOServer's web hosting] is used for its unlimited traffic, reasonable max connection limits, and great DDoS protection. Avoid https://physgun.com/webhosting[Physgun's web hosting] as they screw you over regarding the data usage, for example, they only allowed 5GB bandwidth initially as "fair usage" for their Starter plan.
+
+https://www.namecheap.com/[Namecheap] is what I use for domains. It's likely not the best option, but I've used them for a long time. You need at least one domain to professionally host a game server.
+
+Do not skip any instructions, it is specifically laid out the way it is to prevent security risks.
+
+== 1. Setting up anti-DDoS properly through the cloud.physgun.com website
+- Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
+image:port punch.png[]
+- Go to 'Firewall Portal'.
+
+- Click "Create Game Preset", put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range from 27015 to 27020 (for 5 game servers).
+
+- Click "Create Filter", put the IP address of your game server in, then select TCP Service (symmetric), and put the port as 22 (or your custom SSH port).
+
+- Click the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: TCP, Action: Whitelist, and Destination Port: 22.
+
+- In the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: All (Port Punch), and Action: Deny; this will block all other ports except 27015 to 27020, and port 22.
+
+== 2. Initial setup
 
 Go to https://cloud.physgun.com/sshkeys and add an SSH key, use a Random Name and click Generate Key Pair with -> Key Type: ED25519, Key Size: 2048 bit, Private Key Format: OpenSSH.
 
@@ -18,70 +42,89 @@ TIP: Adding new SSH keys after server creation/OS installation will never apply 
 
 Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label. Also backup that private key with a password manager, such as Bitwarden.
 
-Setup the Physgun VPS server using the latest Debian Linux, with 2GB of swap space, and ensure VNC is disabled.
+Setup the Physgun VPS server using Alpine Linux 3.19, with the hostname set as your domain, set the DNS servers to Cloudflare as primary, Google as secondary, and ensure VNC is disabled in the Advanced Options.
 
 Login with only the SSH key for the 'root' user, and if it works, then proceed.
 
-WARNING: If the Debian version is still 12 instead of 13, run the following and ensure you keep the locally installed version of the files that Debian wishes to replace: +
-`sed -i 's/bookworm/trixie/g' /etc/apt/sources.list && apt update -y && apt upgrade -y --without-new-pkgs && apt full-upgrade -y && reboot`
+Set your domain name to point to localhost: +
+`echo "127.0.1.1 $(hostname) $(hostname)" >> /etc/hosts`
 
-Run only if you updated Debian manually: +
-`apt autoremove`
+.Setting up LinuxGSM, a CLI game hosting panel
 
-`dpkg --add-architecture i386 && apt update -y && apt install -y irqbalance screen unzip sudo curl unattended-upgrades python3-psutil python3-systemd lib32z1 libcurl3t64-gnutls libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 lib32stdc++6 libtinfo5:i386 libcurl3t64-gnutls:i386`
+. Upgrade to Alpine Linux 3.22: +
+`sed -i -e 's/v3\.19/v3\.22/g' /etc/apk/repositories && apk add --upgrade apk-tools && apk upgrade --available && reboot`
 
-Ensure security updates are automatically downloaded and installed: +
-`dpkg-reconfigure unattended-upgrades`
+. `apk add sudo docker docker-cli-compose && rc-update add docker default && service docker start`
 
-Create the steam user: +
-`useradd -m steam`
+. `mkdir -p ~/linuxgsm && cd ~/linuxgsm`
 
-Then set its password: +
-`passwd steam`
+. `adduser linuxgsm`
 
-Install SteamCMD; keep in mind you have to press Enter once and accept Steam's Terms and Conditions: +
-`echo "deb http://ftp.us.debian.org/debian trixie main non-free" > /etc/apt/sources.list.d/non-free.list && apt update -y && apt install -y steamcmd`
-
-Get the current hostname: +
-`hostname`
-
-Edit this file using either nano, vi, or vim: +
-`/etc/hosts`
-
+. `vi compose.yml` (you could install and use `nano` or `vim`)
 ----
-# Add the following line, and change this to your hostname.
-your-current-hostname-here 127.0.1.1
-----
+services:
+  # Bind Mount
+  linuxgsm-tf2-bind:
+    image: gameservermanagers/gameserver:tf2
+    # image: ghcr.io/gameservermanagers/gameserver:tf2
+    container_name: tf2server
+    restart: unless-stopped
+    volumes:
+      - /home/linuxgsm/tf2server:/data
+    network_mode: host
 
-Confirm the `/etc/hosts` change was successful, the pings shouldn't fail: +
-`ping your-current-hostname-here -c4`
+  # Volume
+  linuxgsm-tf2-volume:
+    image: gameservermanagers/gameserver:tf2
+    # image: ghcr.io/gameservermanagers/gameserver:tf2
+    container_name: tf2server-volume
+    restart: unless-stopped
+    volumes:
+      - linuxgsm-tf2:/data
+    network_mode: host
 
-TIP: Get your key at: https://steamcommunity.com/dev/managegameservers +
-Note that each server requires a different key. +
-Without this key, the server is not visible in the game browser.
-
-We are going to store the Steam GLST key into a secure file: +
-`nano /etc/default/tf2-mge-1`
-
-----
-GLST_KEY=placeholder
+volumes:
+  linuxgsm-tf2:
 ----
 
-Set ownership to root with group steam: +
-`chown root:steam /etc/default/tf2-mge-1`
+Disable IPv6 globally: +
+`echo "net.ipv6.conf.default.disable_ipv6=1
+net.ipv6.conf.all.disable_ipv6=1" > /etc/sysctl.d/99-no-ipv6.conf` +
+`sysctl -p /etc/sysctl.d/99-no-ipv6.conf`
 
-Set permissions to 640 (readable and writable by owner, readable by group, inaccessible to others): +
-`chmod 640 /etc/default/tf2-mge-1`
+`docker compose up`
 
-Enter the 'steam' user: +
-`sudo -u steam -s`
 
-== Only run these while inside the 'steam' user
-`mkdir -p ~/.steam/sdk32 ~/.steam/sdk64; ln -s /home/steam/tf2_server/linux32/steamclient.so ~/.steam/sdk32/steamclient.so; ln -s /home/steam/tf2_server/linux64/steamclient.so ~/.steam/sdk64/steamclient.so`
+== 3. Setting up an MGE server
+WARNING: Only run these while inside the 'linuxgsm' user (but outside of the Docker)
 
-`cd ~/ && /usr/games/steamcmd +force_install_dir /home/steam/tf2_server +login anonymous +app_update 232250 +quit`
+//`docker exec -it tf2server bash`
+`sudo -u linuxgsm -s`
 
-`cd "/home/steam/tf2_server/tf"`
+Look at `files/server_mge_1.cfg` in this repository for an example configuration for an MGE server: +
+// TODO: change the directory since we are operating outside of Docker
+`vi ~/tf2server/serverfiles/tf/cfg/tf2server.cfg`
+
+`cp ~/tf2server/config-lgsm/tf2server/_default.cfg ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
+
+`vi ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
+
+[bash]
+----
+port="27015"
+clientport="27016"
+sourcetvport="27017"
+defaultmap="mge_training_v8_beta4b"
+maxplayers="24"
+
+# Be sure to set the GLST key so your server shows up on the game browser.
+
+# Change stopmode="3" to stopmode="1" to make manual server shutdown much faster.
+
+# Change executable="srcds_run" to executable="srcds_run_64"
+----
+
+`cd ~/tf2server/serverfiles/tf`
 
 Keep in mind that this will be outdated, just make sure Metamod:Source and SourceMod are the same major version (such as 1.12): +
 `wget https://mms.alliedmods.net/mmsdrop/1.12/mmsource-1.12.0-git1219-linux.tar.gz && wget https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7210-linux.tar.gz`
@@ -99,15 +142,18 @@ Install SourceBans++: +
 `wget https://github.com/sbpp/sourcebans-pp/releases/download/Plugins-Latest/sourcebans-pp-Plugins-Latest.tar.gz && tar -xvf sourcebans-pp-Plugins-Latest.tar.gz --strip-components=1 && rm sourcebans-pp-Plugins-Latest.tar.gz`
 
 Install a plugin that automatically restarts the server if there are no players and an hour has past; this prevents "lag" and "seed prediction": +
-`cd "/home/steam/tf2_server/tf/addons/sourcemod/plugins"` +
+`cd ~/tf2server/serverfiles/tf/addons/sourcemod/plugins` +
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/restarter.smx`
 
 Install a plugin that limits the players to 2 per IP to prevent excessive amounts of bots: +
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/ip_player_limit.smx`
 
-== Setting up SourceBans++
-- I use https://www.nfoservers.com/order-webhosting.php[NFOServer's web hosting] for its unlimited traffic, reasonable max connection limits, and great DDoS protection. Avoid https://physgun.com/webhosting[Physgun's web hosting] as they screw you over regarding the data usage, for example, they only allowed 5GB bandwidth initially as "fair usage" for their Starter plan.
+If doing an MGE all-class server: +
+`wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/mge_no_eureka_effect.smx && rm mge.smx` +
+`wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/mgemod_spawns.cfg -O ../configs/mge_spawns.cfg`
 
+
+== Setting up SourceBans++
 - Log in to the NFOServers control panel, and go to your website.
 
 - Go to "Databases" and add a new database with the prefix "sb", then check "Allow external connections" and click "Submit changes".
@@ -133,40 +179,12 @@ image:sb_database.png[]
 ** After the SourceBans++ install is complete and it tells you to delete the 'install' directory, run this command: +
 `rm -r ~/public/sourcebans/{install,updater}`
 
-
-== Setting up anti-DDoS properly through the cloud.physgun.com website
-- Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
-image:port punch.png[]
-- Go to 'Firewall Portal'.
-- Click "Create Game Preset", put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range from 27015 to 27020 (for 5 game servers).
-- Click "Create Filter", put the IP address of your game server in, then select TCP Service (symmetric), and put the port as 22 (or your custom SSH port).
-- Click the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: TCP, Action: Whitelist, and Destination Port: 22.
-- In the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: All (Port Punch), and Action: Deny; this will block all other ports except 27015 to 27020, and port 22.
-
 == Setting up FastDL for an MGE server
 .This continues on past SourceBans++, I assume you'll use both.
 * SSH into your web server, then run `cd ~/public && mkdir ~/public/maps'.
 * `wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip 'maps/*' -d . && rm mge.zip`
 * Continue on to the TF2 MGE servers example.
 
-== Example: TF2 MGE servers
-Download this GitHub repository as a zip, which contains the `files` folder with all the necessary files for this server.
-
-.As the 'steam' user:
-- Put `server_mge_1.cfg` in the `~/tf2_server/tf/cfg` directory, and change `sv_downloadurl` to your domain name that has the maps.
-- Put `run_mge_1.py` in the `~/` directory, and run `nano run_mge_1.py` to edit it (required).
-- Put `tf2_autoupdate.txt` in the `~/` directory.
-- Replace the `mgemod_spawn.cfg` in `~/tf2_server/tf/addons/sourcemod/configs` for my own `mgemod_spawns.cfg` if all-class is desired.
-- Replace the `mge.smx` in `~/tf2_server/tf/addons/sourcemod/plugins` with my own `mge_no_eureka_effect.smx` plugin; this stops a spawn-killing exploit with The Eureka Effect.
-
-.As the 'root' user:
-- Put tf2-mge-1.service in the `/etc/systemd/system` directory.
-
-- Enable then start the MGE server: +
-`systemctl enable --now tf2-mge-1`
-
 == Managing TF2 servers
 
-.As the 'steam' user:
-- Note: After entering the MGE server's console with `screen`, you can press kbd:[Ctrl + a], release then press kbd:[d] to exit that `screen` without shutting down the server: +
-`screen -r tf2-mge-1`
+// TODO replace with LinuxGSM
