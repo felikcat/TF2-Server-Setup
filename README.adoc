@@ -11,6 +11,8 @@ endif::[]
 
 == Background info
 
+This is likely the best guide when it comes to security and having the least amount of resource consumption. So on limited disk space and RAM this is a great choice.
+
 https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net offers the best DDoS protection available, and the hardware choices are good.
 
 For FastDL and SourceBans++, https://www.nfoservers.com/order-webhosting.php[NFOServer's web hosting] is used for its unlimited traffic, reasonable max connection limits, and great DDoS protection. Avoid https://physgun.com/webhosting[Physgun's web hosting] as they screw you over regarding the data usage, for example, they only allowed 5GB bandwidth initially as "fair usage" for their Starter plan.
