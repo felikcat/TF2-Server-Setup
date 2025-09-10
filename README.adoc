@@ -11,7 +11,7 @@ endif::[]
 
 == Background info
 
-This is likely the best guide when it comes to security and having the least amount of resource consumption. So on limited disk space and RAM this is a great choice.
+This guide is oriented towards security and having the least amount of resource consumption. So on limited disk space and RAM this is a great choice.
 
 https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net offers the best DDoS protection available, and the hardware choices are good.
 
@@ -26,7 +26,7 @@ Do not skip any instructions, it is specifically laid out the way it is to preve
 image:port punch.png[]
 - Go to 'Firewall Portal'.
 
-- Click "Create Game Preset", put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range from 27015 to 27020 (for 5 game servers).
+- Click "Create Game Preset", put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range from 27005 to 27020.
 
 - Click "Create Filter", put the IP address of your game server in, then select TCP Service (symmetric), and put the port as 22 (or your custom SSH port).
 
@@ -36,37 +36,37 @@ image:port punch.png[]
 
 == 2. Initial setup
 
-Go to https://cloud.physgun.com/sshkeys and add an SSH key, use a Random Name and click Generate Key Pair with -> Key Type: ED25519, Key Size: 2048 bit, Private Key Format: OpenSSH.
+* Go to https://cloud.physgun.com/sshkeys and add an SSH key, use a Random Name and click Generate Key Pair with -> Key Type: ED25519, Key Size: 2048 bit, Private Key Format: OpenSSH.
 
 TIP: Adding new SSH keys after server creation/OS installation will never apply until you reinstall the OS again from Physgun's website.
 
-Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label. Also backup that private key with a password manager, such as Bitwarden.
+- Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label. Also backup that private key with a password manager, such as Bitwarden.
 
-Setup the Physgun VPS server using Alpine Linux 3.19, with the hostname set as your domain, set the DNS servers to Cloudflare as primary, Google as secondary, and ensure VNC is disabled in the Advanced Options.
+* Setup the Physgun VPS server using Alpine Linux 3.19, with the hostname set as your domain, set the DNS servers to Cloudflare as primary, Google as secondary, and ensure VNC is disabled in the Advanced Options.
 
-Login with only the SSH key for the 'root' user, and if it works, then proceed.
+** Login with only the SSH key for the 'root' user, and if it works, then proceed.
 
-Set your domain name to point to localhost: +
+* Set your domain name to point to localhost: +
 `echo "127.0.1.1 $(hostname) $(hostname)" >> /etc/hosts`
 
 .Setting up LinuxGSM, a CLI game hosting panel
 
-. Upgrade to Alpine Linux 3.22: +
+* Upgrade to Alpine Linux 3.22: +
 `sed -i -e 's/v3\.19/v3\.22/g' /etc/apk/repositories && apk add --upgrade apk-tools && apk upgrade --available && reboot`
 
-Start and enable the swap partition: +
+* Start and enable the swap partition: +
 `rc-service swap start && rc-update add swap`
 
-. Install and run Docker: +
+* Install and run Docker: +
 `apk add sudo docker docker-cli-compose && rc-update add docker default && service docker start`
 
-. Make the linuxgsm directory in /root: + 
+* Make the linuxgsm directory in /root: + 
 `mkdir -p ~/linuxgsm && cd ~/linuxgsm`
 
-. Create the linuxgsm user: +
+* Create the linuxgsm user: +
 `adduser linuxgsm`
 
-. `vi compose.yml` (you could install and use `nano` or `vim` to edit this file)
+* `vi compose.yml` (you could install and use `nano` or `vim` to edit this file)
 ----
 services:
   # Bind Mount
@@ -93,67 +93,77 @@ volumes:
   linuxgsm-tf2:
 ----
 
-Disable IPv6 globally: +
+* Disable IPv6 globally: +
 `echo "net.ipv6.conf.default.disable_ipv6=1
 net.ipv6.conf.all.disable_ipv6=1" > /etc/sysctl.d/99-no-ipv6.conf` +
 `sysctl -p /etc/sysctl.d/99-no-ipv6.conf`
 
-We want to ensure LinuxGSM is fully working before running it as `docker compose up -d` (in the background; a "daemon"): +
+* We want to ensure LinuxGSM is fully working before running it as `docker compose up -d` (in the background; a "daemon"): +
 `docker compose up`
 
 
 == 3. Setting up an MGE server
 WARNING: Only run these while inside the 'linuxgsm' user (but outside of the Docker container).
 
-Enter the 'linuxgsm' user: +
+* Enter the 'linuxgsm' user: +
 `sudo -u linuxgsm -s`
 
-Look at `files/server_mge_1.cfg` in this repository for an example configuration for an MGE server: +
+* Look at `files/server_mge_1.cfg` in this repository for an example configuration for an MGE server: +
 `vi ~/tf2server/serverfiles/tf/cfg/tf2server.cfg`
 
-Copy the default LinuxGSM configuration for TF2 to our first TF2 server: +
+* Copy the default LinuxGSM configuration for TF2 to our first TF2 server: +
 `cp ~/tf2server/config-lgsm/tf2server/_default.cfg ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
 
-Edit the first TF2 server: +
+* Edit the first TF2 server: +
 `vi ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
 
 [bash]
 ----
 port="27015"
-clientport="27016"
-sourcetvport="27017"
 defaultmap="mge_training_v8_beta4b"
 maxplayers="24"
 
+# Remove '-strictportbind', '+clientport', and '+tv_port' from startparameters.
+# Add '+mapcyclefile mapcycle_mge_1.txt' to startparameters.
 # Be sure to set the GLST key so your server shows up on the game browser.
 ----
 
-Go to the TF2 server's file directory: +
+* Edit the custom mapcycle file: +
+`vi ~/tf2server/serverfiles/tf/cfg/mapcycle_mge_1.txt`
+----
+mge_training_v8_beta4b
+----
+
+* Go to the TF2 server's file directory: +
 `cd ~/tf2server/serverfiles/tf`
 
-Keep in mind that this will be outdated, just make sure Metamod:Source and SourceMod are the same major version (such as 1.12): +
+* Keep in mind that this will be outdated, just make sure Metamod:Source and SourceMod are the same major version (such as 1.12): +
 `wget https://mms.alliedmods.net/mmsdrop/1.12/mmsource-1.12.0-git1219-linux.tar.gz && wget https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7210-linux.tar.gz`
 
-Extract those archives to their correct locations: +
+* Extract those archives to their correct locations: +
 `tar -xvf mmsource-1.12.0-git1219-linux.tar.gz && tar -xvf sourcemod-1.12.0-git7210-linux.tar.gz && rm mmsource-1.12.0-git1219-linux.tar.gz && rm sourcemod-1.12.0-git7210-linux.tar.gz`
 
-Download and install this plugin that stops console & log spam when somebody uses an anti-aim pitch that goes out of bounds (such as -271): +
+* This plugin is used to stop uploading crash dumps to the "community" or Valve: +
+`wget https://builds.limetech.io/files/accelerator-2.5.0-git138-cd575aa-linux.zip && unzip accelerator-2.5.0-git138-cd575aa-linux.zip`
+- Edit: `addons/sourcemod/configs/core.cfg` and put inside `Core { }` -> `"MinidumpSymbolUpload"  "0"`.
+
+* This plugin stops console & log spam when somebody uses an anti-aim pitch that goes out of bounds (such as -271): +
 `wget https://github.com/accelerator74/Cleaner/releases/download/build/Cleaner-smlatest-linux-14a8f04.tar.gz && tar -xvf Cleaner-smlatest-linux-14a8f04.tar.gz && rm Cleaner-smlatest-linux-14a8f04.tar.gz`
 
-If you're hosting an MGE server: +
+* If you're hosting an MGE server: +
 `wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip && rm mge.zip`
 
-Install SourceBans++: +
+* Install SourceBans++: +
 `wget https://github.com/sbpp/sourcebans-pp/releases/download/Plugins-Latest/sourcebans-pp-Plugins-Latest.tar.gz && tar -xvf sourcebans-pp-Plugins-Latest.tar.gz --strip-components=1 && rm sourcebans-pp-Plugins-Latest.tar.gz`
 
-Install a plugin that automatically restarts the server if there are no players and an hour has past; this prevents "lag" and "seed prediction": +
+* Install a plugin that automatically restarts the server if there are no players and an hour has past; this prevents "lag" and "seed prediction": +
 `cd ~/tf2server/serverfiles/tf/addons/sourcemod/plugins` +
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/restarter.smx`
 
-Install a plugin that limits the players to 2 per IP to prevent excessive amounts of bots: +
+* Install a plugin that limits the players to 2 per IP to prevent excessive amounts of bots: +
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/ip_player_limit.smx`
 
-If doing an MGE all-class server: +
+* If doing an MGE all-class server: +
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/mge_no_eureka_effect.smx && rm mge.smx` +
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/mgemod_spawns.cfg -O ../configs/mge_spawns.cfg`
 
@@ -191,14 +201,14 @@ image:sb_database.png[]
 
 == Managing TF2 servers
 
-Enter the Docker container: +
+* Enter the Docker container: +
 `docker exec -it tf2server bash`
 
-Enter the 'linuxgsm' user: +
+* Enter the 'linuxgsm' user: +
 `sudo -u linuxgsm -s`
 
-Run to get the list of commands available to manage the first TF2 server: +
+* Run to get the list of commands available to manage the first TF2 server: +
 `./tf2server`
 
-An example for running a second TF2 server with the same files (created through the `./linuxgsm.sh tf2server` command): +
+* An example for running a second TF2 server with the same files (created through the `./linuxgsm.sh tf2server` command): +
 `./tf2server-2`
