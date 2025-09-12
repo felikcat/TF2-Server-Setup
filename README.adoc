@@ -17,7 +17,7 @@ https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net of
 
 For FastDL and SourceBans++, https://www.nfoservers.com/order-webhosting.php[NFOServer's web hosting] is used for its unlimited traffic, reasonable max connection limits, and great DDoS protection. Avoid https://physgun.com/webhosting[Physgun's web hosting] as they screw you over regarding the data usage, for example, they only allowed 5GB bandwidth initially as "fair usage" for their Starter plan.
 
-https://www.namecheap.com/[Namecheap] is what I use for domains. It's likely not the best option, but I've used them for a long time. You need at least one domain to professionally host a game server.
+https://tld-list.com/[TLD-list] is what to use for finding who has the cheapest pricing for a domain. You need at least one domain to professionally host a game server.
 
 Do not skip any instructions, it is specifically laid out the way it is to prevent security risks.
 
