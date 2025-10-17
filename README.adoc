@@ -9,6 +9,8 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
+WARNING: This is being rewritten to use Pyrodactyl instead of LinuxGSM.
+
 == Background info
 
 This guide is oriented towards security and having the least amount of resource consumption. So on limited disk space and RAM this is a great choice.
