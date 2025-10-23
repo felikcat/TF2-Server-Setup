@@ -192,7 +192,7 @@ services:
 `sudo docker compose up`
 
 
-== 3. Setting up a server
+== 4. Setting up a TF2 server's configs & plugins
 NOTE: MGE is used as an example, however these instructions work for other types of servers too. +
 Keep in mind that you want the map to change at least every 35 minutes (`mp_timelimit 35`) to prevent the server from "lagging", which is likely due to TF2's math precision bugs.
 
@@ -353,7 +353,7 @@ writeip
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/mgemod_spawns.cfg -O ../configs/mge_spawns.cfg`
 
 
-== Setting up SourceBans++
+== 5. Setting up SourceBans++
 - Log in to the NFOServers control panel, and go to your website.
 
 - Go to "Databases" and add a new database with the prefix "sb", then check "Allow external connections" and click "Submit changes".
