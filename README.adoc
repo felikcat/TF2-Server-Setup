@@ -186,6 +186,7 @@ services:
     environment:
       SRCDS_TOKEN: "0123456789DEADB33F"
       SRCDS_PW: ""
+      SRCDS_PORT: "27015"
       SRCDS_MAXPLAYERS: "24"
       SRCDS_STARTMAP: "ctf_2fort"
       SRCDS_CFG: "server_2fort.cfg"
