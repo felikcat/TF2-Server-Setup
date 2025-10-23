@@ -17,12 +17,14 @@ This guide is oriented towards security and minimalism.
 .You can use Steam Datagram Relay (SDR) to hide the server's IP address, lower ping to players, and protect from DDoS attacks. This also allows for much cheaper hosting options, or self-hosting.
 - The downside: No consistent IP address or port, so players can't bookmark the server or even find it in some cases.
 - Instructions for using SDR will be shown, but if your provider has a great anti-DDoS, don't use it.
-** Good providers with great anti-DDoS:
-*** https://pyro.host[Pyro] (recommended)
-*** https://physgun.com/[Physgun]
-*** https://www.nfoservers.com/[NFOservers]
+** Good providers with great anti-DDoS; be sure to look for coupon / discount codes:
+*** https://royalehosting.net/[RoyaleHosting] (not as fast as Pyro or Physgun's CPU)
+*** https://pyro.host[Pyro] (might be better than Physgun in the future)
+*** https://physgun.com/[Physgun] (ol' reliable for US and EU gaming VPSes)
+*** https://streamline-servers.com/game-servers/team-fortress-2[Streamline Servers] (cheaper than Gcore for Asia and South America; do not fall for their "free" FastDL, if you use it outside of their servers they will suspend your account)
+*** https://www.nfoservers.com/[NFOservers] (used to be king, now they're overpriced and dated)
 *** https://gcore.com/[Gcore] (suitable for Asia and South America, expensive)
-*** https://www.ovhcloud.com/en/bare-metal/game/[OVHcloud] (dedicated GAME servers only, expensive)
+*** https://www.ovhcloud.com/en/security/game-ddos-protection/[OVHcloud] (GAME or Rise Game dedicated servers only, expensive)
 
 For FastDL and SourceBans++, https://www.nfoservers.com/order-webhosting.php[NFOServer's web hosting] is used for its unlimited traffic, reasonable max connection limits, and great DDoS protection. Avoid https://physgun.com/webhosting[Physgun's web hosting] as they screw you over regarding the data usage, for example, they only allowed 5GB bandwidth initially as "fair usage" for their Starter plan.
 
@@ -45,7 +47,7 @@ image:port punch.png[]
 
 - In the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: All (Port Punch), and Action: Deny; this will block all other ports except 27015 to 27020, and port 22.
 
-== 1. Initial setup
+== 1. (VPS only) Initial setup
 
 * Download and install https://ubuntu.com/download/server[Ubuntu Server LTS 24.04], or choose that as your image for hosting provider.
 - If installing manually / self-hosting: +
@@ -57,7 +59,7 @@ image:port punch.png[]
 ** NOTE: If you're using a laptop as a server, set `HandleLidSwitchExternalPower=ignore` in `/etc/systemd/logind.conf`; you can optionally set the other `HandleLidSwitch` options to `ignore` as well in case it's running temporarily off the battery during a power outage or other event. +
 Then run: `sudo systemctl restart systemd-logind`
 
-== 2. Securing the server
+== 2. (VPS only) Securing the server
 
 Install sudo, and optionally nano (a text editor): +
 `# apt install sudo nano`
@@ -141,7 +143,7 @@ AIDE is a useful intrusion detection system, but for our use cases it won't be u
 `sudo apt remove aide`
 
 
-== 3. Setting up cm2network/tf2, a Docker image for TF2 server hosting
+== 3. (VPS only) Setting up cm2network/tf2, a Docker image for TF2 server hosting
 
 * Follow the official instructions to https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository[install Docker using the apt repository].
 
@@ -194,7 +196,8 @@ services:
 
 == 4. Setting up a TF2 server's configs & plugins
 NOTE: MGE is used as an example, however these instructions work for other types of servers too. +
-Keep in mind that you want the map to change at least every 35 minutes (`mp_timelimit 35`) to prevent the server from "lagging", which is likely due to TF2's math precision bugs.
+- Keep in mind that you want the map to change at least every 35 minutes (`mp_timelimit 35`) to prevent the server from "lagging", which is likely due to TF2's math precision bugs. +
+- The directories will be different if you were not using the VPS instructions, adapt accordingly.
 
 `nano /srv/tf2-dir/tf/cfg/server_mge.cfg`
 
@@ -322,6 +325,15 @@ mp_chattime 10
 
 // Enable party mode
 tf_birthday 0
+
+
+// Logging Settings //
+log on
+sv_log_onefile 1
+sv_logfile 1
+sv_logbans 1
+sv_logecho 1
+
 
 // Execute Banned Users //
 exec banned_user.cfg
