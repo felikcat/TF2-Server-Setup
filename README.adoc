@@ -7,25 +7,34 @@ ifdef::env-github[]
 :important-caption: :heavy_exclamation_mark:
 :caution-caption: :fire:
 :warning-caption: :warning:
+:toc:
 endif::[]
-
-WARNING: This is being rewritten to use Pyrodactyl instead of LinuxGSM.
 
 == Background info
 
-This guide is oriented towards security and having the least amount of resource consumption. So on limited disk space and RAM this is a great choice.
+This guide is oriented towards security and minimalism.
 
-https://physgun.com/vps/[Physgun High Performance VPSes] are used as path.net offers the best DDoS protection available, and the hardware choices are good.
+.You can use Steam Datagram Relay (SDR) to hide the server's IP address, lower ping to players, and protect from DDoS attacks. This also allows for much cheaper hosting options, or self-hosting.
+- The downside: No consistent IP address or port, so players can't bookmark the server or even find it in some cases.
+- Instructions for using SDR will be shown, but if your provider has a great anti-DDoS, don't use it.
+** Good providers with great anti-DDoS:
+*** https://pyro.host[Pyro] (recommended)
+*** https://physgun.com/[Physgun]
+*** https://www.nfoservers.com/[NFOservers]
+*** https://gcore.com/[Gcore] (suitable for Asia and South America, expensive)
+*** https://www.ovhcloud.com/en/bare-metal/game/[OVHcloud] (dedicated GAME servers only, expensive)
 
 For FastDL and SourceBans++, https://www.nfoservers.com/order-webhosting.php[NFOServer's web hosting] is used for its unlimited traffic, reasonable max connection limits, and great DDoS protection. Avoid https://physgun.com/webhosting[Physgun's web hosting] as they screw you over regarding the data usage, for example, they only allowed 5GB bandwidth initially as "fair usage" for their Starter plan.
 
-https://tld-list.com/[TLD-list] is what to use for finding who has the cheapest pricing for a domain. You need at least one domain to professionally host a game server.
+https://tld-list.com/[TLD-list] is what to use for finding who has the cheapest pricing for a domain. You can optionally have at least one domain to professionally host a game server.
 
-Do not skip any instructions, it is specifically laid out the way it is to prevent security risks.
+== 0.5 Physgun VPS anti-DDoS setup
+This is necessary for their VPS options to protect against DDoS attacks. Do not buy their game servers, they are overpriced.
 
-== 1. Setting up anti-DDoS properly through the cloud.physgun.com website
 - Go to the Physgun VPS' (cloud.physgun.com) firewall settings, and create a new rule with the following; be sure to change the IP Address to your game server: +
 image:port punch.png[]
+** The web server IP is that of your NFOservers web host for FastDL (up to you to setup) & Sourcebans++ (which will be setup later).
+
 - Go to 'Firewall Portal'.
 
 - Click "Create Game Preset", put the IP address of your game server in (not the web server), then select HL2/Garry's Mod Server, and put the port range from 27005 to 27020.
@@ -36,131 +45,305 @@ image:port punch.png[]
 
 - In the "Rules" category, click "Create Rule", put the IP address of your game server in, then Protocol: All (Port Punch), and Action: Deny; this will block all other ports except 27015 to 27020, and port 22.
 
-== 2. Initial setup
+== 1. Initial setup
 
-* Go to https://cloud.physgun.com/sshkeys and add an SSH key, use a Random Name and click Generate Key Pair with -> Key Type: ED25519, Key Size: 2048 bit, Private Key Format: OpenSSH.
+* Download and install https://ubuntu.com/download/server[Ubuntu Server LTS 24.04], or choose that as your image for hosting provider.
+- If installing manually / self-hosting: +
+** Use the Minimized install and do not search for third-party drivers.
+** Do not setup the disk as an LVM group.
+** Install the OpenSSH server to access that server PC from your own PC through the local network (do not port forward port 22).
+** Do not install any snaps, they are shit.
+** After reboot, login and run `ip a` to see your local IP address. You can use that to login via SSH.
+** NOTE: If you're using a laptop as a server, set `HandleLidSwitchExternalPower=ignore` in `/etc/systemd/logind.conf`; you can optionally set the other `HandleLidSwitch` options to `ignore` as well in case it's running temporarily off the battery during a power outage or other event. +
+Then run: `sudo systemctl restart systemd-logind`
 
-TIP: Adding new SSH keys after server creation/OS installation will never apply until you reinstall the OS again from Physgun's website.
+== 2. Securing the server
 
-- Copy the entire Private Key into your the Termius program through its Keychain tab, and set its label. Also backup that private key with a password manager, such as Bitwarden.
+Install sudo, and optionally nano (a text editor): +
+`# apt install sudo nano`
 
-* Setup the Physgun VPS server using Alpine Linux 3.19, with the hostname set as your domain, set the DNS servers to Cloudflare as primary, Google as secondary, and ensure VNC is disabled in the Advanced Options.
+If the current user is root, make an administrator account instead to avoid mistakes. By default it'll be a user, unprivileged, but can escalate to root via using `sudo` before a command: +
+`# useradd -m -G sudo -s /bin/bash server`
 
-** Login with only the SSH key for the 'root' user, and if it works, then proceed.
+Set the password to something you can remember, it won't matter too much as we'll rely on an SSH key to protect the login. +
+`# passwd server`
 
-* Set your domain name to point to localhost: +
-`echo "127.0.1.1 $(hostname) $(hostname)" >> /etc/hosts`
+Login to 'server' and test if sudo works (it should output -> root): +
+`sudo whoami`
 
-.Setting up LinuxGSM, a CLI game hosting panel
+The 'server' user is now going to be used instead of using 'root' directly.
 
-* Upgrade to Alpine Linux 3.22: +
-`sed -i -e 's/v3\.19/v3\.22/g' /etc/apk/repositories && apk add --upgrade apk-tools && apk upgrade --available && reboot`
+.*Setting up SSH key authentication:*
+. Run on the server for the 'server' user: +
+`mkdir -p ~/.ssh`
 
-* Start and enable the swap partition: +
-`rc-service swap start && rc-update add swap`
+. Run `ssh-keygen` on your local computer/PC, or *alternatively generate an SSH key using Bitwarden*. Use the default location unless you already have an SSH key there (in that case, put it elsewhere and remember it), then set the passphrase to something moderately complex using a password manager like Bitwarden (be sure to save it in there too). I recommend at least 30 characters long, lower & upper case characters with numbers, and no symbols.
 
-* Install and run Docker: +
-`apk add sudo docker docker-cli-compose && rc-update add docker default && service docker start`
+- If you used Bitwarden to generate the SSH key, put the Public Key into `~/.ssh/authorized_keys` on the server.
 
-* Make the linuxgsm directory in /root: + 
-`mkdir -p ~/linuxgsm && cd ~/linuxgsm`
+.Only skip these instructions if Bitwarden was used
+[%collapsible]
+====
 
-* Create the linuxgsm user: +
-`adduser linuxgsm`
+. Include `-i /DIRECTORY/TO/YOUR/id_ed25519.pub` if you put a custom location and/or name (i.e. not id_ed25519.pub or id_rsa.pub): +
+`ssh-copy-id -p YOUR_SSH_PORT server@YOUR_SERVER_IP`
+- On Windows, use PowerShell and do this instead: `type C:\Users\$Env:UserName\.ssh\id_ed25519.pub | ssh -p YOUR_SSH_PORT server@YOUR_SERVER_IP 'cat >> ~/.ssh/authorized_keys'`
 
-* `vi compose.yml` (you could install and use `nano` or `vim` to edit this file)
+. Check on the server to see if your key was installed successfully: +
+`cat ~/.ssh/authorized_keys`
+
+. Get the file contents of your id_ed25519 file (private key) along with the public key and put it into Bitwarden (or other password manager), as you never want to lose this SSH key.
+====
+
+Login with only the SSH key for the 'server' user, and if it works, proceed with the next hardening step.
+
+.Enforce SSH key login only:
+----
+sudo sed -i -E \
+  -e 's/^#?PasswordAuthentication\s+.*/PasswordAuthentication no/' \
+  -e 's/^#?ChallengeResponseAuthentication\s+.*/ChallengeResponseAuthentication no/' \
+  /etc/ssh/sshd_config
+
+sudo systemctl restart ssh
+----
+
+TIP: *irqbalance* balances interrupts across CPU cores to handle high load more efficiently, which can prevent low networking performance. +
+*AppArmor* is to stop software from doing what they shouldn't, hence better security. +
+*auditd* is to allow viewing AppArmor logs, but also installing auditd allows AppArmor profiles to be created by you. +
+*Unattended upgrades* is so you don't accidentally forget to update packages, which would cause security issues. +
+*apt-transport-https* is to allow apt to operate over HTTPS to prevent security flaws such as https://justi.cz/security/2019/01/22/apt-rce.html[RCEs].
+
+`sudo apt update && sudo apt install -y irqbalance apparmor apparmor-utils auditd unattended-upgrades apt-listchanges apt-transport-https`
+
+Update the server, be sure to "keep the local version currently installed" whenever possible: +
+`sudo apt upgrade`
+
+Reboot if all went well: +
+`sudo reboot`
+
+.Setting up kernel hotpatching support, to update the kernel automatically without rebooting, and hardening with CIS level 1.
+. `sudo apt install -y ubuntu-advantage-tools`
+. You have to make an https://ubuntu.com/pro/attach[Ubuntu Pro account] to use Ubuntu Pro's functionality, then run: +
+`sudo ua attach`
+. `sudo pro enable usg && sudo apt install usg`
+. `sudo usg fix cis_level1_server`
+
+Enforce the repositories to use HTTPS: +
+`sudo sed -i 's/http:\/\//https:\/\//g' /etc/apt/sources.list.d/ubunt*.sources`
+
+Ensure security updates are automatically downloaded and installed: +
+`sudo dpkg-reconfigure unattended-upgrades`
+
+Sudo edit `/etc/fstab` and add "noatime" to the ext4 or XFS partition: +
+image:fstab.png[Fstab configuration with noatime]
+
+AIDE is a useful intrusion detection system, but for our use cases it won't be used and may end up needlessly using a lot of CPU: +
+`sudo apt remove aide`
+
+
+== 3. Setting up cm2network/tf2, a Docker image for TF2 server hosting
+
+* Follow the official instructions to https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository[install Docker using the apt repository].
+
+* Make the cm2network directory. + 
+`mkdir -p ~/cm2network && cd ~/cm2network`
+
+* https://hub.docker.com/r/cm2network/tf2#configuration[Read here] on what the environment variables in the docker-compose.yml file mean, such as SRCDS_TOKEN.
+
+* Edit: `docker-compose.yml`
 ----
 services:
-  # Bind Mount
-  linuxgsm-tf2-bind:
-    image: gameservermanagers/gameserver:tf2
-    # image: ghcr.io/gameservermanagers/gameserver:tf2
-    container_name: tf2server
-    restart: unless-stopped
-    volumes:
-      - /home/linuxgsm/tf2server:/data
+  tf2:
+    # Allocates a stdin (docker run -i)
+    stdin_open: true
+    # Allocates a tty (docker run -t)
+    tty: true
+    # Max CPUs to allocate, float, so e.g. 3.5 can be set.
+    cpus: 2
+    # Specific CPUs to allocate, 0-3 is first 4 CPUs, "0,1,2,3" can be used as well
+    # Ensure these are pinned to P-cores if using an Intel CPU with P and E-cores
+    cpuset: 0-1
+    # Use the host network, RECOMMENDED.
     network_mode: host
-
-  # Volume
-  linuxgsm-tf2-volume:
-    image: gameservermanagers/gameserver:tf2
-    # image: ghcr.io/gameservermanagers/gameserver:tf2
-    container_name: tf2server-volume
-    restart: unless-stopped
+    # Binds /srv/tf2-dir to /home/steam/tf-dedicated in the container
+    # Usually you can share the same sourcemod directory with other servers, if you can't, change '/srv/tf2-dir' to something like '/srv/tf2-dir-2'
     volumes:
-      - linuxgsm-tf2:/data
-    network_mode: host
-
-volumes:
-  linuxgsm-tf2:
+      - /srv/tf2-dir:/home/steam/tf-dedicated
+    # Rename the container_name to something like 'tf2-dedicated-mge' if running multiple servers
+    container_name: tf2-dedicated
+    environment:
+      SRCDS_TOKEN: "0123456789DEADB33F"
+      SRCDS_PW: ""
+      SRCDS_MAXPLAYERS: "24"
+      SRCDS_STARTMAP: "ctf_2fort"
+      SRCDS_CFG: "server_2fort.cfg"
+      # Only if you have great DDoS protection: set this to "0"
+      SRCDS_SDR_FAKEIP: "1"
+      # 1 = VAC secured
+      SRCDS_SECURED: "0"
+      # Rest of your env vars...
+    image: cm2network/tf2:sourcemod-x64
 ----
 
-* Disable IPv6 globally: +
-`echo "net.ipv6.conf.default.disable_ipv6=1
-net.ipv6.conf.all.disable_ipv6=1" > /etc/sysctl.d/99-no-ipv6.conf` +
-`sysctl -p /etc/sysctl.d/99-no-ipv6.conf`
+* Create the directory that the TF2 server will use and set the correct permissions: +
+`sudo mkdir -p /srv/tf2-dir && sudo chown -R 1000:1000 /srv/tf2-dir`
 
-* We want to ensure LinuxGSM is fully working before running it as `docker compose up -d` (in the background; a "daemon"): +
-`docker compose up`
+* We want to ensure the server is fully working before running it as a daemon; press kbd:[Ctrl + c] when the server is successfully ran and you did a test connection to it through TF2. +
+`sudo docker compose up`
 
 
-== 3. Setting up an MGE server
-WARNING: Only run these while inside the 'linuxgsm' user (but outside of the Docker container).
+== 3. Setting up a server
+NOTE: MGE is used as an example, however these instructions work for other types of servers too. +
+Keep in mind that you want the map to change at least every 35 minutes (`mp_timelimit 35`) to prevent the server from "lagging", which is likely due to TF2's math precision bugs.
 
-* Enter the 'linuxgsm' user: +
-`sudo -u linuxgsm -s`
+`nano /srv/tf2-dir/tf/cfg/server_mge.cfg`
 
-* Look at `files/server_mge_1.cfg` in this repository for an example configuration for an MGE server: +
-`vi ~/tf2server/serverfiles/tf/cfg/tf2server.cfg`
-
-* Copy the default LinuxGSM configuration for TF2 to our first TF2 server: +
-`cp ~/tf2server/config-lgsm/tf2server/_default.cfg ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
-
-* Edit the first TF2 server: +
-`vi ~/tf2server/config-lgsm/tf2server/tf2server.cfg`
-
-[bash]
 ----
-port="27015"
-defaultmap="mge_training_v8_beta4b"
-maxplayers="24"
+// Please do NOT set RCON here, use SRCDS_RCONPW in the Docker Compose file instead.
 
-# Remove '-strictportbind', '+clientport', and '+tv_port' from startparameters.
-# Add '+mapcyclefile mapcycle_mge_1.txt' to startparameters.
-# Be sure to set the GLST key so your server shows up on the game browser.
-----
+// General Settings //
 
-* Edit the custom mapcycle file: +
-`vi ~/tf2server/serverfiles/tf/cfg/mapcycle_mge_1.txt`
-----
-mge_training_v8_beta4b
+// Hostname for server.
+// This name will appear in the server list.
+hostname "Example MGE server"
+
+// Control where the client gets content from 
+// 0 = anywhere, 1 = anywhere listed in white list, 2 = steam official content only
+sv_pure -1
+
+// Disallow sprays
+sv_allowupload 0
+
+sv_tags "mge,and,your,other,tags,here"
+
+mapcyclefile mapcycle_mge.txt
+
+
+// Region //
+
+
+// The region of the world to report this server in.
+// -1 is the world, 0 is USA east coast, 1 is USA west coast
+// 2 south america, 3 europe, 4 asia, 5 australia, 6 middle east, 7 africa
+sv_region -1
+
+
+// Rcon Settings //
+
+// Number of minutes to ban users who fail rcon authentication
+sv_rcon_banpenalty 1440
+
+// Max number of times a user can fail rcon authentication before being banned
+sv_rcon_maxfailures 5
+
+
+/////////////////////
+// Gameplay CVars //
+///////////////////
+
+// Maximum number of rounds to play before server changes maps
+mp_maxrounds 5
+
+// Team Balancing //
+
+// Enable team balancing
+mp_autoteambalance 1 
+
+// Time after the teams become unbalanced to attempt to switch players.
+mp_autoteambalance_delay 60
+
+// Time after the teams become unbalanced to print a balance warning
+mp_autoteambalance_warning_delay 30
+
+// Teams are unbalanced when one team has this many more players than the other team. (0 disables check)
+mp_teams_unbalance_limit 1
+
+
+
+// Round and Game Times //
+
+// Enable timers to wait between rounds. WARNING: Setting this to 0 has been known to cause a bug with setup times lasting 5:20 (5 minutes 20 seconds) on some servers!
+mp_enableroundwaittime 1
+
+// Time after round win until round restarts
+mp_bonusroundtime 8
+
+// If non-zero, the current round will restart in the specified number of seconds
+mp_restartround 0
+
+// Enable sudden death
+mp_stalemate_enable 1
+
+// Timelimit (in seconds) of the stalemate round.
+mp_stalemate_timelimit 300
+
+// Game time per map in minutes
+mp_timelimit 35
+
+
+
+// Client CVars //
+
+// Restricts spectator modes for dead players
+mp_forcecamera 0
+
+// Toggles whether the server allows spectator mode or not
+mp_allowspectators 1
+
+// Toggles footstep sounds
+mp_footsteps 1
+
+// Toggles game cheats
+sv_cheats 0
+
+// After this many seconds without a message from a client, the client is dropped
+sv_timeout 900
+
+// Maximum time a player is allowed to be idle (in minutes), made this and sv_timeout equal same time?
+mp_idlemaxtime 15
+
+// Deals with idle players 1=send to spectator 2=kick
+mp_idledealmethod 1
+
+// Time (seconds) between decal sprays
+decalfrequency 30
+
+
+// Communications //
+
+// enable voice communications
+sv_voiceenable 1
+
+// Players can hear all other players, no team restrictions 0=off 1=on
+sv_alltalk 1
+
+// Amount of time players can chat after the game is over
+mp_chattime 10
+
+// Enable party mode
+tf_birthday 0
+
+// Execute Banned Users //
+exec banned_user.cfg
+exec banned_ip.cfg
+writeid
+writeip
 ----
 
 * Go to the TF2 server's file directory: +
-`cd ~/tf2server/serverfiles/tf`
-
-* Keep in mind that this will be outdated, just make sure Metamod:Source and SourceMod are the same major version (such as 1.12): +
-`wget https://mms.alliedmods.net/mmsdrop/1.12/mmsource-1.12.0-git1219-linux.tar.gz && wget https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7210-linux.tar.gz`
-
-* Extract those archives to their correct locations: +
-`tar -xvf mmsource-1.12.0-git1219-linux.tar.gz && tar -xvf sourcemod-1.12.0-git7210-linux.tar.gz && rm mmsource-1.12.0-git1219-linux.tar.gz && rm sourcemod-1.12.0-git7210-linux.tar.gz`
-
-* This plugin is used to stop uploading crash dumps to the "community" or Valve: +
-`wget https://builds.limetech.io/files/accelerator-2.5.0-git138-cd575aa-linux.zip && unzip accelerator-2.5.0-git138-cd575aa-linux.zip`
-- Edit: `addons/sourcemod/configs/core.cfg` and put inside `Core { }` -> `"MinidumpSymbolUpload"  "0"`.
+`cd /srv/tf2-dir/tf`
 
 * This plugin stops console & log spam when somebody uses an anti-aim pitch that goes out of bounds (such as -271): +
-`wget https://github.com/accelerator74/Cleaner/releases/download/build/Cleaner-smlatest-linux-14a8f04.tar.gz && tar -xvf Cleaner-smlatest-linux-14a8f04.tar.gz && rm Cleaner-smlatest-linux-14a8f04.tar.gz`
+`wget https://github.com/accelerator74/Cleaner/releases/download/build/Cleaner-smlatest-oldlinux-14a8f04.tar.gz && tar -xvf Cleaner-smlatest-oldlinux-14a8f04.tar.gz && rm Cleaner-smlatest-oldlinux-14a8f04.tar.gz`
 
 * If you're hosting an MGE server: +
 `wget https://github.com/sapphonie/MGEMod/releases/download/v3.0.9/mge.zip && unzip mge.zip && rm mge.zip`
 
-* Install SourceBans++: +
+* Install SourceBans++ plugins: +
 `wget https://github.com/sbpp/sourcebans-pp/releases/download/Plugins-Latest/sourcebans-pp-Plugins-Latest.tar.gz && tar -xvf sourcebans-pp-Plugins-Latest.tar.gz --strip-components=1 && rm sourcebans-pp-Plugins-Latest.tar.gz`
 
-* Install a plugin that automatically restarts the server if there are no players and an hour has past; this prevents "lag" and "seed prediction": +
-`cd ~/tf2server/serverfiles/tf/addons/sourcemod/plugins` +
-`wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/restarter.smx`
+* Go into the plugins directory: +
+`cd /srv/tf2-dir/tf/addons/sourcemod/plugins`
 
 * Install a plugin that limits the players to 2 per IP to prevent excessive amounts of bots: +
 `wget https://github.com/felikcat/TF2-Server-Setup/raw/refs/heads/main/files/ip_player_limit.smx`
@@ -179,7 +362,7 @@ mge_training_v8_beta4b
 
 - `cd ~/public && wget https://github.com/sbpp/sourcebans-pp/releases/download/1.7.0/sourcebans-pp-1.7.0.webpanel-only.tar.gz`
 
-- `mv sourcebans-pp-1.7.0.webpanel-only sourcebans && rm sourcebans-pp-1.7.0.webpanel-only.tar.gz`
+- `tar -xvf sourcebans-pp-1.7.0.webpanel-only.tar.gz && mv sourcebans-pp-1.7.0.webpanel-only sourcebans && rm sourcebans-pp-1.7.0.webpanel-only.tar.gz`
 
 - Follow the official https://sbpp.github.io/docs/quickstart/#web-installation[installation instructions] (don't scroll up, those instructions are meant to be skipped).
 ** http://example.site.nfoservers.com/sourcebans/install is the correct URL for installing SourceBans++, be sure to change 'example' to your web server name or custom domain.
@@ -203,14 +386,12 @@ image:sb_database.png[]
 
 == Managing TF2 servers
 
-* Enter the Docker container: +
-`docker exec -it tf2server bash`
+List all running Docker containers: +
+`sudo docker ps`
 
-* Enter the 'linuxgsm' user: +
-`sudo -u linuxgsm -s`
+Show logs for the 'tf2-dedicated' container: + 
+`sudo docker logs tf2-dedicated`
 
-* Run to get the list of commands available to manage the first TF2 server: +
-`./tf2server`
-
-* An example for running a second TF2 server with the same files (created through the `./linuxgsm.sh tf2server` command): +
-`./tf2server-2`
+Enter the terminal / shell of said container, allowing you to type in and run commands on the TF2 server. +
+NOTE: Do not press kbd:[Ctrl + c] while attached, it will kill the server; press kbd:[Ctrl + p] then kbd:[Ctrl + q] instead: +
+`sudo docker attach tf2-dedicated`
