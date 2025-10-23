@@ -157,8 +157,8 @@ Reboot to complete the USG fix process: +
 
 * Follow the official instructions to https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository[install Docker using the apt repository].
 
-* Make the cm2network directory. + 
-`mkdir -p ~/cm2network && cd ~/cm2network`
+* Make the 2fort (or whatever type of server you plan on) directory. + 
+`mkdir -p ~/2fort && cd ~/2fort`
 
 * https://hub.docker.com/r/cm2network/tf2#configuration[Read here] on what the environment variables in the docker-compose.yml file mean, such as SRCDS_TOKEN.
 
@@ -200,7 +200,7 @@ services:
 * Create the directory that the TF2 server will use and set the correct permissions: +
 `sudo mkdir -p /srv/tf2-dir && sudo chown -R 1000:1000 /srv/tf2-dir`
 
-* We want to ensure the server is fully working before running it as a daemon; press kbd:[Ctrl + c] when the server is successfully ran and you did a test connection to it through TF2. +
+* We want to ensure the server is fully working before running it as a daemon; press kbd:[Ctrl + c] when the server is successfully ran and you did a test connection to it through TF2: +
 `sudo docker compose up`
 
 
